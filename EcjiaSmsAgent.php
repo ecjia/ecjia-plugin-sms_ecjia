@@ -41,16 +41,18 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
      */
     public function send($mobile)
     {
-        $url = self::HOST . self::SEND;
-    
         $requestParams = array(
             'content' => $this->content,
             'mobile' => $mobile,
         );
 
         $requestParams = array_merge($this->authParams(), $requestParams);
- 
-        return $this->httpRequest($url, $requestParams);
+
+        $cloud = ecjia_cloud::instance()->api(self::SEND)->data($requestParams)->run();
+
+        $result = $this->transformerResponse($cloud);
+
+        return $result;
     }
     
     /**
@@ -63,7 +65,7 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
         $cloud = ecjia_cloud::instance();
         $result = $cloud->api(self::BALANCE)->data($requestParams)->run();
 
-        if (trim($cloud->getStatus()) == 'error') {
+        if ($cloud->getStatus() == ecjia_cloud::STATUS_ERROR) {
             return $cloud->getError();
         }
         
@@ -73,61 +75,46 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
     }
     
     /**
-     * @param $url
-     * @param array $body
-     * @return array $result
-     * @return int $result[].code 返回0则成功，返回其它则错误
-     * @return string $result[].msg 返回消息
-     * @return string $result[].raw 接口返回的原生信息
-     * @return array $result[].data 数据信息
-     */
-    public function httpRequest($url, array $body)
-    {
-        $data = [
-        	'body' => $body
-        ];
-        
-        $response = $this->sendWithRetry($url, $data);
-
-        $result = $this->transformerResponse($response);
-    
-        return $result;
-    }
-    
-    /**
      * 转换返回的信息处理
-     * @param array $response
+     * @param ecjia_cloud $cloud
      * @return array $result
      * @return int $result[].code 返回0则成功，返回其它则错误
      * @return string $result[].msg 返回消息
      * @return string $result[].raw 接口返回的原生信息
      * @return array $result[].data 数据信息
      */
-    public function transformerResponse($response)
+    public function transformerResponse(ecjia_cloud $cloud)
     {
-        $body = $response['body'];
-        $result_arr = RC_Xml::to_array($body);
-
         $data = array();
         
-        if (isset($result_arr['smsid'])) {
-            $data['smsid'] = $result_arr['smsid'][0];
-            $data['msgid'] = $result_arr['smsid'][0];
+        if (is_ecjia_error($cloud->getError())) {
+            $data['msgid'] = '0';
+            $code = $cloud->getError()->get_error_code();
+            $description = $cloud->getError()->get_error_message();
+            $raw = '';
         }
-        
-        if (isset($result_arr['num'])) {
-            $data['num']   = $result_arr['num'][0];
+        else if (RC_Error::is_error($cloud->getResponse())) {
+            $data['msgid'] = '0';
+            $code = $cloud->getResponse()->get_error_code();
+            $description = $cloud->getResponse()->get_error_message();
+            $raw = '';
         }
-         
+        else {
+            $data['msgid'] = array_get($cloud->getReturnData(), 'msgid');
+            $code = 0;
+            $description = 'OK';
+            $raw = array_get($cloud->getResponse(), 'body');
+        }
+
         $result = [
-        	'raw' => $body,
+        	'raw' => $raw,
             'data' => $data,
-            'code' => $result_arr['code'][0],
-            'description' => $result_arr['msg'][0],
+            'code' => $code,
+            'description' => $description,
         ];
         
-        if ($result['code'] != '2') {
-            return new ecjia_error('ihuyi_error_'.$result['code'], $result['description'], $result);
+        if ($code !== 0) {
+            return new ecjia_error('ecjia_sms_send_error', $result['description'], $result);
         }
         
         return $result;
