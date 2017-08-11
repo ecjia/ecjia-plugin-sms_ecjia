@@ -84,7 +84,7 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
      * @return string $result[].raw 接口返回的原生信息
      * @return array $result[].data 数据信息
      */
-    public function transformerResponse(ecjia_cloud $cloud)
+    public function transformerResponse($cloud)
     {
         $data = array();
         
