@@ -62,12 +62,13 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
     {
         $requestParams = $this->authParams();
         
-        $cloud = ecjia_cloud::instance();
-        $result = $cloud->api(self::BALANCE)->data($requestParams)->run();
+        $cloud = ecjia_cloud::instance()->api(self::BALANCE)->data($requestParams)->run();
 
         if ($cloud->getStatus() == ecjia_cloud::STATUS_ERROR) {
             return $cloud->getError();
         }
+        
+        $result = $cloud->getReturnData();
         
         return array('data' => array(
         	'num' => $result['balance']
