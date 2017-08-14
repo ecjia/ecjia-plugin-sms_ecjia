@@ -94,12 +94,6 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
             $description = $cloud->getError()->get_error_message();
             $raw = '';
         }
-        else if (RC_Error::is_error($cloud->getResponse())) {
-            $data['msgid'] = '0';
-            $code = $cloud->getResponse()->get_error_code();
-            $description = $cloud->getResponse()->get_error_message();
-            $raw = '';
-        }
         else {
             $data['msgid'] = array_get($cloud->getReturnData(), 'msgid');
             $code = 0;
