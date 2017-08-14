@@ -3,6 +3,8 @@
 use Royalcms\Component\Support\Arr;
 use Royalcms\Component\Sms\Sms;
 use Royalcms\Component\Sms\Contracts\SmsAgent;
+use Royalcms\Component\Sms\SendResponse;
+use Royalcms\Component\Sms\BalanceResponse;
 
 class EcjiaSmsAgent extends Sms implements SmsAgent
 {
@@ -57,6 +59,7 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
     
     /**
      * 查询账户余额
+     * @return BalanceResponse | \ecjia_error
      */
     public function balance()
     {
@@ -64,15 +67,19 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
         
         $cloud = ecjia_cloud::instance()->api(self::BALANCE)->data($requestParams)->run();
 
-        if ($cloud->getStatus() == ecjia_cloud::STATUS_ERROR) {
+        if (is_ecjia_error($cloud->getError())) {
             return $cloud->getError();
         }
         
         $result = $cloud->getReturnData();
         
-        return array('data' => array(
-        	'num' => $result['balance']
-        ));
+        $response = new BalanceResponse();
+        $response->setCode(SendResponse::SUCCESS);
+        $response->setDescription(SendResponse::DESCRIPTION);
+        $response->setRaw(array_get($cloud->getResponse(), 'body'));
+        $response->setBalance($result['balance']);
+        
+        return $response;
     }
     
     /**
@@ -86,33 +93,25 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
      */
     public function transformerResponse($cloud)
     {
-        $data = array();
+        $response = new SendResponse();
         
         if (is_ecjia_error($cloud->getError())) {
-            $data['msgid'] = '0';
-            $code = $cloud->getError()->get_error_code();
-            $description = $cloud->getError()->get_error_message();
-            $raw = '';
+            $response->setCode($cloud->getError()->get_error_code());
+            $response->setMsg($cloud->getError()->get_error_message());
+            $response->setMsgid(0);
         }
         else {
-            $data['msgid'] = array_get($cloud->getReturnData(), 'msgid');
-            $code = 0;
-            $description = 'OK';
-            $raw = array_get($cloud->getResponse(), 'body');
-        }
-
-        $result = [
-        	'raw' => $raw,
-            'data' => $data,
-            'code' => $code,
-            'description' => $description,
-        ];
-        
-        if ($code !== 0) {
-            return new ecjia_error('ecjia_sms_send_error', $result['description'], $result);
+            $response->setCode(SendResponse::SUCCESS);
+            $response->setDescription(SendResponse::DESCRIPTION);
+            $response->setRaw(array_get($cloud->getResponse(), 'body'));
+            $response->setMsgid(array_get($cloud->getReturnData(), 'msgid'));
         }
         
-        return $result;
+        if ($response->getCode() !== SendResponse::SUCCESS) {
+            return new ecjia_error('ecjia_sms_send_error', $response->getDescription(), $response);
+        }
+        
+        return $response;
     }
     
 }
