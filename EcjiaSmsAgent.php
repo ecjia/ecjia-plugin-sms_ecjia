@@ -40,6 +40,8 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
      * 发送信息
      * 
      * @see \Royalcms\Component\Sms\Contracts\SmsAgent::send()
+     * 
+     * @return SendResponse | \ecjia_error
      */
     public function send($mobile)
     {
@@ -85,11 +87,7 @@ class EcjiaSmsAgent extends Sms implements SmsAgent
     /**
      * 转换返回的信息处理
      * @param ecjia_cloud $cloud
-     * @return array $result
-     * @return int $result[].code 返回0则成功，返回其它则错误
-     * @return string $result[].msg 返回消息
-     * @return string $result[].raw 接口返回的原生信息
-     * @return array $result[].data 数据信息
+     * @return SendResponse | \ecjia_error
      */
     public function transformerResponse($cloud)
     {
