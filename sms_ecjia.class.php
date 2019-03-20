@@ -99,7 +99,7 @@ class sms_ecjia extends SmsAbstract
      */
     public function loadLanguage($key = null, $default = null)
     {
-        $locale = RC_Config::get('system.locale');
+        $locale = 'zh_CN';
                 
         return $this->loadPluginData(RC_Plugin::plugin_dir_path(__FILE__) . '/languages/'.$locale.'/plugin.lang.php', $key, $default);
     }
