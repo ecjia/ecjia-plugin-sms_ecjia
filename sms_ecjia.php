@@ -49,7 +49,7 @@ Plugin Name: 模板堂短信
 Plugin URI: http://www.ecjia.com/plugins/ecjia.sms_ecjia/
 Description: 使用ECJia短信渠道，发送验证码短信、订单通知等。<br><a href="https://sms.ecjia.com/" target="_blank"><font color="red">立即在线申请</font></a>。
 Author: ECJIA TEAM
-Version: 1.0.0
+Version: 1.30.0
 Author URI: http://www.ecjia.com/
 Plugin App: sms
 */
