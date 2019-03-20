@@ -54,4 +54,9 @@ return array(
 	   array('name' => 'app_key',           'type' => 'text',       'value' => ''),
 	   array('name' => 'app_secret',        'type' => 'text',       'value' => ''),
 	),
+
+    'dynamic_option' => array(
+        'app_key' 	=> '短信平台APPID：',
+        'app_secret' 	=> '短信平台APPSECRET：',
+    ),
 );
