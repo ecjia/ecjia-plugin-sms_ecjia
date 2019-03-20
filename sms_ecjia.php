@@ -52,6 +52,7 @@ Author: ECJIA TEAM
 Version: 1.30.0
 Author URI: http://www.ecjia.com/
 Plugin App: sms
+Text Domain: sms_ecjia
 */
 defined('IN_ECJIA') or exit('No permission resources.');
 class plugin_sms_ecjia {
