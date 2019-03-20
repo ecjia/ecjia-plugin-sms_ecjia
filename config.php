@@ -56,7 +56,7 @@ return array(
 	),
 
     'dynamic_option' => array(
-        'app_key' 	=> '短信平台APPID：',
-        'app_secret' 	=> '短信平台APPSECRET：',
+        'app_key' 	=> __('短信平台APPID：', 'sms_ecjia'),
+        'app_secret' 	=> __('短信平台APPSECRET：', 'sms_ecjia'),
     ),
 );
