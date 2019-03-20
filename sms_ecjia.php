@@ -78,6 +78,7 @@ class plugin_sms_ecjia {
 }
 
 Ecjia_PluginManager::extend('sms_ecjia', function() {
+    RC_Locale::loadPluginTextdomain('sms_ecjia');
     require_once RC_Plugin::plugin_dir_path(__FILE__) . 'sms_ecjia.class.php';
     return new sms_ecjia();
 });
